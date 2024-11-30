@@ -1,4 +1,4 @@
-import 'package:finance/models/cashFlow_models.dart';
+import 'package:finance/models/cash_flow_models.dart';
 
 class UserProfile {
   int id = 1;
