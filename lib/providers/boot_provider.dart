@@ -13,7 +13,7 @@ class BootProvider extends ChangeNotifier {
 
     if (context.mounted) {
       if (user != null) {
-        var updatedUser = await AccountService.profile();
+        var updatedUser = await AccountService.getCurrentUser();
         if (context.mounted) {
           if (updatedUser['status_code'] == 200) {
             reconfigUserData(context, updatedUser['data']);

@@ -1,4 +1,3 @@
-import 'package:finance/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,12 +26,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LoginPage(),
-            ),
-          );
+          Navigator.pushNamed(context, '/add-cashFlow');
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),

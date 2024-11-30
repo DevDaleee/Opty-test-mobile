@@ -8,6 +8,7 @@ enum Category {
   INVESTMENTS,
   FOOD,
   INSURE,
+  OTHER,
 }
 
 class CashFlow {

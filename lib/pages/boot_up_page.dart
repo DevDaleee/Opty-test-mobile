@@ -29,7 +29,7 @@ class _BootPageState extends State<BootPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/logo.png',
+                    'assets/logo/Llogo.png',
                     scale: 8,
                   ),
                   const SizedBox(height: SpaceSizes.xxl),
