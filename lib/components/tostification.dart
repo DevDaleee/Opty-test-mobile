@@ -3,7 +3,7 @@ import 'package:toastification/toastification.dart';
 
 void showToast(BuildContext context, Map<String, dynamic> response) {
   ToastificationType type;
-  if (response['statusCode'] == 200 || response['statusCode'] == 201) {
+  if (response['status_code'] == 200 || response['status_code'] == 201) {
     type = ToastificationType.success;
   } else {
     type = ToastificationType.error;

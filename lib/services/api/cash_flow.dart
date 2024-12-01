@@ -39,7 +39,7 @@ class CashFlowService {
     return _handleResponse(response);
   }
 
-  static Future<Map<String, dynamic>> getAllCashFlows() async {
+  static Future<List<dynamic>> getAllCashFlows() async {
     var token = await HeadersConfig.readAccessToken();
 
     var headers = <String, String>{
@@ -48,11 +48,15 @@ class CashFlowService {
     };
 
     var response = await Dio().get(
-      '${ApiConstants.basePath}/cashflow/all',
+      '${ApiConstants.basePath}/cashflow/getAll',
       options: Options(headers: headers),
     );
 
-    return _handleResponse(response);
+    if (response.data is List<dynamic> && response.data != null) {
+      return response.data;
+    }
+
+    return [];
   }
 
   static Future<Map<String, dynamic>> getCashFlowById(String cashFlowId) async {

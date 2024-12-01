@@ -16,6 +16,7 @@ dependencies:
   flutter_native_splash: ^2.4.3
   isar: ^3.1.0+1
   toastification: ^2.3.0
+  flutter_svg: ^2.0.16
 
 dev_dependencies:
   flutter_test:
@@ -37,6 +38,10 @@ flutter:
     - assets/logo/Dlogo.png
     - assets/logo/Llogo.png
     - assets/icons/icon-money.png
+    - assets/icons/arrow-up.svg
+    - assets/icons/arrow-down.svg
+    - assets/icons/DSort.svg
+    - assets/icons/LSort.svg
   
   fonts:
     - family: Poppins

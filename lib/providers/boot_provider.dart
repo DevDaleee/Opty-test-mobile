@@ -1,7 +1,10 @@
 import 'package:finance/data/usar_database.dart';
+import 'package:finance/models/cash_flow_models.dart';
 import 'package:finance/models/user_models.dart';
+import 'package:finance/providers/cash_flow_provider.dart';
 import 'package:finance/providers/user_provider.dart';
 import 'package:finance/services/api/account.dart';
+import 'package:finance/services/api/cash_flow.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +19,7 @@ class BootProvider extends ChangeNotifier {
         var updatedUser = await AccountService.getCurrentUser();
         if (context.mounted) {
           if (updatedUser['status_code'] == 200) {
-            reconfigUserData(context, updatedUser['data']);
+            await reconfigUserData(context, updatedUser['data']);
           } else {
             _initializeProviders(context, user);
           }
@@ -27,16 +30,25 @@ class BootProvider extends ChangeNotifier {
     return '/login';
   }
 
-  reconfigUserData(BuildContext context, Map<String, dynamic> userJson) async {
+  Future<void> reconfigUserData(
+      BuildContext context, Map<String, dynamic> userJson) async {
     var user = UserProfile.fromJson(userJson);
     await UserDatabase.update(user);
+
     if (context.mounted) {
       _initializeProviders(context, user);
     }
     debugPrint('User data updated');
   }
 
-  _initializeProviders(BuildContext context, UserProfile user) {
+  void _initializeProviders(BuildContext context, UserProfile user) async {
     context.read<UserProvider>().user = user;
+    List<dynamic> cashFlowsData = await CashFlowService.getAllCashFlows();
+
+    if (context.mounted) {
+      context.read<CashFlowProvider>().cashFlow = cashFlowsData.map((json) {
+        return CashFlow.fromJson(json);
+      }).toList();
+    }
   }
 }

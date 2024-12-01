@@ -1,6 +1,6 @@
 import 'package:finance/components/buttons/custom_outlined_button.dart';
-import 'package:finance/components/helper/regex.dart';
 import 'package:finance/components/helper/sizes.dart';
+import 'package:finance/components/helper/validation_mixin.dart';
 import 'package:finance/components/tostification.dart';
 import 'package:finance/services/api/account.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,8 @@ class CreateAccountPage extends StatefulWidget {
   State<CreateAccountPage> createState() => _CreateAccountPageState();
 }
 
-class _CreateAccountPageState extends State<CreateAccountPage> {
+class _CreateAccountPageState extends State<CreateAccountPage>
+    with ValidationsMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -54,12 +55,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       keyboardType: TextInputType.name,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(hintText: 'Nome'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        }
-                        return null;
-                      },
+                      validator: (nick) => combine(
+                        [
+                          () => isNotEmpty(nick),
+                        ],
+                      ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
@@ -67,14 +67,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(hintText: 'Email'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        } else if (!emailRegex.hasMatch(value)) {
-                          return 'Informe um email válido';
-                        }
-                        return null;
-                      },
+                      validator: (email) => combine(
+                        [
+                          () => isNotEmpty(email),
+                          () => hasFiveChars(email),
+                          () => validacaoEmail(email!),
+                        ],
+                      ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
@@ -84,12 +83,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       decoration: const InputDecoration(
                         hintText: 'Senha',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        }
-                        return null;
-                      },
+                      validator: (senha) => combine(
+                        [
+                          () => isNotEmpty(senha),
+                          () => hasFiveChars(senha),
+                          () => validarSenha(senha!)
+                        ],
+                      ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
@@ -99,12 +99,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       decoration: const InputDecoration(
                         hintText: 'Confirme a senha',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        }
-                        return null;
-                      },
+                      validator: (senha) => combine(
+                        [
+                          () => isNotEmpty(senha),
+                          () => hasFiveChars(senha),
+                          () => validarSenha(senha!)
+                        ],
+                      ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     CustomOutlinedButton(

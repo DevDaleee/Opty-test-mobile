@@ -2,8 +2,8 @@
 
 import 'package:finance/components/buttons/custom_filled_button.dart';
 import 'package:finance/components/buttons/custom_outlined_button.dart';
-import 'package:finance/components/helper/regex.dart';
 import 'package:finance/components/helper/sizes.dart';
+import 'package:finance/components/helper/validation_mixin.dart';
 import 'package:finance/data/usar_database.dart';
 import 'package:finance/models/user_models.dart';
 import 'package:finance/providers/user_provider.dart';
@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with ValidationsMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -79,14 +79,13 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(hintText: 'Email'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        } else if (!emailRegex.hasMatch(value)) {
-                          return 'Informe um email válido';
-                        }
-                        return null;
-                      },
+                      validator: (email) => combine(
+                        [
+                          () => isNotEmpty(email),
+                          () => hasFiveChars(email),
+                          () => validacaoEmail(email!),
+                        ],
+                      ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
@@ -96,26 +95,27 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Senha',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
-                        }
-                        return null;
-                      },
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Esqueci a senha',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xff3F6784),
-                          ),
-                        ),
+                      validator: (senha) => combine(
+                        [
+                          () => isNotEmpty(senha),
+                          () => hasFiveChars(senha),
+                          () => validarSenha(senha!)
+                        ],
                       ),
                     ),
+                    // Align(
+                    //   alignment: Alignment.centerRight,
+                    //   child: TextButton(
+                    //     onPressed: () {},
+                    //     child: const Text(
+                    //       'Esqueci a senha',
+                    //       style: TextStyle(
+                    //         fontSize: 14,
+                    //         color: Color(0xff3F6784),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     CustomFilledButton(
                       onPressed: () async {
