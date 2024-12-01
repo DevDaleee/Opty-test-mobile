@@ -24,11 +24,13 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool isLoading = false;
 
-  configUserData(BuildContext context, Map<String, dynamic> userProfile) async {
-    var user = UserProfile.fromJson(userProfile);
+  configUserData(BuildContext context) async {
+    var userProfile =
+        await AccountService.getUserByEmail(_emailController.text);
+    var user = UserProfile.fromJson(userProfile.data);
     context.read<UserProvider>().user = user;
 
-    if (user.cashFlow != null) {
+    if (user.email!.isNotEmpty) {
       await UserDatabase.update(user);
 
       initializeProviders(user);
@@ -40,7 +42,6 @@ class _LoginPageState extends State<LoginPage> {
 
   initializeProviders(UserProfile user) {
     context.read<UserProvider>().user = user;
-    // context.read<CashFlowProvider>().initialize(user.bodyData!);
   }
 
   @override
@@ -125,6 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                         );
                         if (context.mounted) {
                           isLoading = false;
+                          configUserData(context);
                           Navigator.pushNamedAndRemoveUntil(
                               context, '/home', (_) => false);
                         }

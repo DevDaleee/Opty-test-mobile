@@ -35,7 +35,10 @@ class AccountService {
       '${ApiConstants.basePath}/auth/login',
       data: userData,
     );
-
+    if (response.statusCode != 200 || response.statusCode != 201) {
+      await HeadersConfig.addTokenKey(
+          accessKeyValue: response.data['access_token']);
+    }
     Map<String, dynamic> res = {
       "status_code": response,
       "data": response.statusMessage,
@@ -44,7 +47,7 @@ class AccountService {
     return res;
   }
 
-  static Future<Map<String, dynamic>> getUserByEmail(String email) async {
+  static Future<Response> getUserByEmail(String email) async {
     var token = await HeadersConfig.readAccessToken();
 
     var headers = <String, String>{
@@ -58,12 +61,7 @@ class AccountService {
       options: Options(headers: headers),
     );
 
-    Map<String, dynamic> res = {
-      "status_code": response,
-      "data": response.statusMessage,
-    };
-
-    return res;
+    return response;
   }
 
   static Future<Map<String, dynamic>> getCurrentUser() async {

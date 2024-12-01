@@ -10,14 +10,11 @@ class HeadersConfig {
     prefs.remove(entityId);
   }
 
-  static addAccessToken({
+  static addTokenKey({
     required String accessKeyValue,
-    required String userIdValue,
   }) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
     await prefs.setString(tokenKey, accessKeyValue);
-    await prefs.setString(entityId, userIdValue);
   }
 
   static Future<String?> readAccessToken() async {

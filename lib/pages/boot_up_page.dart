@@ -9,7 +9,6 @@ class BootPage extends StatefulWidget {
   @override
   State<BootPage> createState() => _BootPageState();
 }
-
 class _BootPageState extends State<BootPage> {
   @override
   Widget build(BuildContext context) {
