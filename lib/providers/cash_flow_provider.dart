@@ -10,7 +10,7 @@ class CashFlowProvider extends ChangeNotifier {
   double cashIn = 0.00;
   double cashOut = 0.00;
   int lenght = 0;
-  final List<bool> _selectedFilterValues = [false, false, true, false, false];
+  final List<bool> _selectedFilterValues = [false, false, false, true, false];
   int _selectedFilterIndex = 3;
   Category pickedCategory = Category.FOOD;
   bool _isCashIn = true;
@@ -29,8 +29,8 @@ class CashFlowProvider extends ChangeNotifier {
     _cashFlow = cashFlows;
     totalBalance = _calculateTotalBalance();
     _cashInAndCashOut();
-    filter(3);
-    updateDatabase(); // Atualiza o banco local ao alterar os dados
+    updateDatabase();
+    filter(2);
     notifyListeners();
   }
 
@@ -83,51 +83,45 @@ class CashFlowProvider extends ChangeNotifier {
     });
   }
 
-  filter(int filterIndex) {
+  void filter(int filterIndex) {
     for (int i = 0; i < _selectedFilterValues.length; i++) {
       _selectedFilterValues[i] = i == filterIndex;
     }
-
     _selectedFilterIndex = filterIndex;
 
     switch (filterIndex) {
-      case 0:
+      case 0: // Somente entradas
         _filteredCashFlow =
             _cashFlow.where((value) => value.isCashIn == true).toList();
         break;
 
-      case 1:
+      case 1: // Somente saídas
         _filteredCashFlow =
             _cashFlow.where((value) => value.isCashIn == false).toList();
         break;
 
-      case 2:
-        _filteredCashFlow = _cashFlow
-            .where(
-              (value) => value.createdAt != null,
-            )
-            .toList()
-          ..sort((a, b) {
-            return a.createdAt!.difference(DateTime.now()).abs().compareTo(
-                  b.createdAt!.difference(DateTime.now()).abs(),
-                );
-          });
-
-        break;
-
-      case 3:
+      case 2: // Ordenado por proximidade da data
         _filteredCashFlow =
             _cashFlow.where((value) => value.createdAt != null).toList()
               ..sort((a, b) {
-                return b.createdAt!.difference(DateTime.now()).compareTo(
-                      a.createdAt!.difference(DateTime.now()),
-                    );
+                return a.createdAt!
+                    .difference(DateTime.now())
+                    .compareTo(b.createdAt!.difference(DateTime.now()).abs());
               });
+        break;
 
+      case 3: // Ordenado por data mais distante
+        _filteredCashFlow =
+            _cashFlow.where((value) => value.createdAt != null).toList()
+              ..sort((a, b) {
+                return b.createdAt!
+                    .difference(DateTime.now())
+                    .compareTo(a.createdAt!.difference(DateTime.now()));
+              });
         break;
 
       default:
-        _filteredCashFlow = [];
+        _filteredCashFlow = _cashFlow;
     }
     notifyListeners();
   }

@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
                       child: Padding(
                         padding: const EdgeInsets.all(PaddingSizes.sm),
                         child: Text(
-                          'R\$ ${provider.totalBalance}',
+                          'R\$ ${provider.totalBalance.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.inverseSurface,
                           ),
@@ -89,11 +89,11 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     CashFlowCard(
                       image: 'assets/icons/arrow-up.svg',
-                      value: provider.cashIn.toString(),
+                      value: provider.cashIn.toStringAsFixed(2),
                     ),
                     CashFlowCard(
                       image: 'assets/icons/arrow-down.svg',
-                      value: provider.cashOut.toString(),
+                      value: provider.cashOut.toStringAsFixed(2),
                     ),
                   ],
                 ),
@@ -134,9 +134,9 @@ class _HomePageState extends State<HomePage> {
                                   'Sem motivo',
                               date: provider.cashFlow[index].createdAt ??
                                   DateTime.now(),
-                              value:
-                                  provider.cashFlow[index].amount?.toString() ??
-                                      '0.00',
+                              value: provider.cashFlow[index].amount
+                                      ?.toStringAsFixed(2) ??
+                                  '0.00',
                               isCashIn:
                                   provider.cashFlow[index].isCashIn ?? true,
                             );

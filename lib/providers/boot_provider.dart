@@ -1,3 +1,4 @@
+import 'package:finance/data/cashflow_database.dart';
 import 'package:finance/data/usar_database.dart';
 import 'package:finance/models/cash_flow_models.dart';
 import 'package:finance/models/user_models.dart';
@@ -18,7 +19,7 @@ class BootProvider extends ChangeNotifier {
       if (user != null) {
         var updatedUser = await AccountService.getCurrentUser();
         if (context.mounted) {
-          if (updatedUser['status_code'] == 200) {
+          if (updatedUser['statusCode'] == 200) {
             await reconfigUserData(context, updatedUser['data']);
           } else {
             initializeProviders(context, user);
@@ -34,6 +35,7 @@ class BootProvider extends ChangeNotifier {
       BuildContext context, Map<String, dynamic> userJson) async {
     var user = UserProfile.fromJson(userJson);
     await UserDatabase.update(user);
+    await CashFlowDatabase.clear();
 
     if (context.mounted) {
       await initializeProviders(context, user);
@@ -44,19 +46,15 @@ class BootProvider extends ChangeNotifier {
   Future<void> initializeProviders(
       BuildContext context, UserProfile user) async {
     context.read<UserProvider>().user = user;
-
     List<dynamic> remoteCashFlows = await CashFlowService.getAllCashFlows();
 
     if (context.mounted) {
       CashFlowProvider provider = context.read<CashFlowProvider>();
-
       await provider.loadFromDatabase();
-
       List<CashFlow> mergedCashFlows = _mergeCashFlows(
         provider.cashFlow,
         remoteCashFlows.map((json) => CashFlow.fromJson(json)).toList(),
       );
-
       provider.cashFlow = mergedCashFlows;
       await provider.updateDatabase();
     }

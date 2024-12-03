@@ -6,7 +6,8 @@ class CashFlowDatabase {
   static const String _cashFlowKey = 'cashFlow_data';
 
   static Future<void> initialize() async {
-    await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_cashFlowKey);
   }
 
   static Future<void> updateAll(List<CashFlow> cashFlows) async {
@@ -31,4 +32,3 @@ class CashFlowDatabase {
     await prefs.remove(_cashFlowKey);
   }
 }
-
