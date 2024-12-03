@@ -4,6 +4,7 @@ import 'package:finance/components/helper/colors.dart';
 import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/components/option_menu.dart';
 import 'package:finance/providers/cash_flow_provider.dart';
+import 'package:finance/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -17,11 +18,30 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   @override
+  void initState() {
+    context.read<UserProvider>().getProfile();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final GlobalKey iconKey = GlobalKey();
+    UserProvider user = context.read<UserProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Finan.ce'),
+        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(PaddingSizes.lg),
+            child: Text(
+              'Olá ${user.user!.name}!',
+              style: const TextStyle(
+                fontSize: TextSizes.lg,
+              ),
+            ),
+          )
+        ],
       ),
       body: Consumer<CashFlowProvider>(
         builder: (context, provider, _) => SingleChildScrollView(

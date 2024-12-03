@@ -1,4 +1,3 @@
-import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/providers/boot_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,31 +8,22 @@ class BootPage extends StatefulWidget {
   @override
   State<BootPage> createState() => _BootPageState();
 }
+
 class _BootPageState extends State<BootPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(0),
-        child: AppBar(backgroundColor: Theme.of(context).colorScheme.primary),
-      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer<BootProvider>(
         builder: (context, provider, _) => FutureBuilder(
           future: provider.routeForInitialize(context),
           builder: (context, AsyncSnapshot<String> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/logo/Llogo.png',
-                    scale: 8,
-                  ),
-                  const SizedBox(height: SpaceSizes.xxl),
-                  const Center(child: CircularProgressIndicator()),
-                ],
+              return Center(
+                child: Image.asset(
+                  'assets/logo/${Theme.of(context).brightness == Brightness.dark ? 'L' : 'D'}logo.png',
+                  scale: 8,
+                ),
               );
             } else {
               WidgetsBinding.instance.addPostFrameCallback(

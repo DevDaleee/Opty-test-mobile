@@ -1,33 +1,77 @@
+import 'dart:convert';
 import 'package:finance/models/cash_flow_models.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CashFlowProvider extends ChangeNotifier {
-  List<CashFlow> _cashFlow = [];
-  List<CashFlow> _filteredCashFlow = [];
+  List<dynamic> _cashFlow = [];
+  List<dynamic> _filteredCashFlow = [];
   double totalBalance = 0.00;
   double cashIn = 0.00;
   double cashOut = 0.00;
   int lenght = 0;
   final List<bool> _selectedFilterValues = [false, false, true, false, false];
   int _selectedFilterIndex = 3;
+  Category pickedCategory = Category.FOOD;
+  bool _isCashIn = true;
 
-  List<CashFlow> get cashFlow => _cashFlow;
-  List<CashFlow> get filteredCashFlow => _filteredCashFlow;
+  List<dynamic> get cashFlow => _cashFlow;
+  List<dynamic> get filteredCashFlow => _filteredCashFlow;
   int get selectedFilterIndex => _selectedFilterIndex;
+  bool get isCashIn => _isCashIn;
 
-  set cashFlow(List<CashFlow> cashFlows) {
+  set isCashIn(bool isCashIn) {
+    _isCashIn = isCashIn;
+    notifyListeners();
+  }
+
+  set cashFlow(List<dynamic> cashFlows) {
     _cashFlow = cashFlows;
+    totalBalance = _calculateTotalBalance();
+    _cashInAndCashOut();
+    filter(3);
+    updateDatabase(); // Atualiza o banco local ao alterar os dados
+    notifyListeners();
+  }
+
+  Future<void> loadFromDatabase() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? cashFlowJson = prefs.getString('cashFlow_data');
+
+    if (cashFlowJson != null) {
+      List<dynamic> cashFlowList = jsonDecode(cashFlowJson);
+      _cashFlow = cashFlowList.map((item) => CashFlow.fromJson(item)).toList();
+    } else {
+      _cashFlow = [];
+    }
+
     totalBalance = _calculateTotalBalance();
     _cashInAndCashOut();
     notifyListeners();
   }
 
+  Future<void> updateDatabase() async {
+    final prefs = await SharedPreferences.getInstance();
+    String cashFlowJson =
+        jsonEncode(_cashFlow.map((item) => item.toJson()).toList());
+    await prefs.setString('cashFlow_data', cashFlowJson);
+  }
+
+  void updateCategoryChoosed(String value) {
+    pickedCategory = getCategoryFromString(value);
+    notifyListeners();
+  }
+
   void _cashInAndCashOut() {
+    cashIn = 0.0;
+    cashOut = 0.0;
+    lenght = 0;
+
     for (var element in _cashFlow) {
       if (element.isCashIn! == true) {
-        cashIn = element.amount!;
+        cashIn += element.amount!;
       } else {
-        cashOut = element.amount!;
+        cashOut += element.amount!;
       }
       lenght++;
     }
@@ -85,7 +129,6 @@ class CashFlowProvider extends ChangeNotifier {
       default:
         _filteredCashFlow = [];
     }
-
     notifyListeners();
   }
 
@@ -105,7 +148,7 @@ class CashFlowProvider extends ChangeNotifier {
   }
 
   Category getCategoryFromString(String categoryString) {
-    switch (categoryString.toUpperCase()) {
+    switch (categoryString) {
       case 'Saúde':
         return Category.HEALTH;
       case 'Casa':
@@ -119,7 +162,24 @@ class CashFlowProvider extends ChangeNotifier {
       case 'Outro':
         return Category.OTHER;
       default:
-        return Category.OTHER;
+        throw Exception('Categoria desconhecida: $categoryString');
+    }
+  }
+
+  String getStringFromCategory(Category category) {
+    switch (category) {
+      case Category.HEALTH:
+        return 'Saúde';
+      case Category.HOUSING:
+        return 'Casa';
+      case Category.INVESTMENTS:
+        return 'Investimentos';
+      case Category.FOOD:
+        return 'Comida';
+      case Category.INSURE:
+        return 'Entretenimento';
+      case Category.OTHER:
+        return 'Outro';
     }
   }
 }

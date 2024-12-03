@@ -1,6 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:finance/components/buttons/custom_outlined_button.dart';
+import 'package:finance/components/helper/regex.dart';
 import 'package:finance/components/helper/sizes.dart';
-import 'package:finance/components/helper/validation_mixin.dart';
 import 'package:finance/components/tostification.dart';
 import 'package:finance/services/api/account.dart';
 import 'package:flutter/material.dart';
@@ -12,14 +14,35 @@ class CreateAccountPage extends StatefulWidget {
   State<CreateAccountPage> createState() => _CreateAccountPageState();
 }
 
-class _CreateAccountPageState extends State<CreateAccountPage>
-    with ValidationsMixin {
+class _CreateAccountPageState extends State<CreateAccountPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmpasswordController = TextEditingController();
-  final bool _isLoading = false;
+  bool _isLoading = false;
+
+  _submit() async {
+    if (_isLoading) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    Map<String, dynamic> res = await AccountService.createUser(
+      _emailController.text,
+      _passwordController.text,
+      _nameController.text,
+    );
+
+    setState(
+        () => _isLoading = false);
+    if (res['success']) {
+      showToast(context, res);
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    } else {
+      showToast(context, res);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,29 +74,29 @@ class _CreateAccountPageState extends State<CreateAccountPage>
                 child: Column(
                   children: [
                     TextFormField(
-                      controller: _nameController,
-                      keyboardType: TextInputType.name,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(hintText: 'Nome'),
-                      validator: (nick) => combine(
-                        [
-                          () => isNotEmpty(nick),
-                        ],
-                      ),
-                    ),
+                        controller: _nameController,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(hintText: 'Nome'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, preecha esse campo';
+                          }
+                          return null;
+                        }),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(hintText: 'Email'),
-                      validator: (email) => combine(
-                        [
-                          () => isNotEmpty(email),
-                          () => hasFiveChars(email),
-                          () => validacaoEmail(email!),
-                        ],
-                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preecha esse campo';
+                        } else if (!emailRegex.hasMatch(value)) {
+                          return 'Informe um email válido';
+                        }
+                        return null;
+                      },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
@@ -83,45 +106,40 @@ class _CreateAccountPageState extends State<CreateAccountPage>
                       decoration: const InputDecoration(
                         hintText: 'Senha',
                       ),
-                      validator: (senha) => combine(
-                        [
-                          () => isNotEmpty(senha),
-                          () => hasFiveChars(senha),
-                          () => validarSenha(senha!)
-                        ],
-                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preecha esse campo';
+                        } else if (value.length < 4) {
+                          return 'Informe uma senha maior e segura';
+                        } else if (_passwordController.text !=
+                            _confirmpasswordController.text) {
+                          return 'As senhas não coincidem';
+                        }
+                        return null;
+                      },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
-                      obscureText: true,
-                      controller: _confirmpasswordController,
-                      textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                        hintText: 'Confirme a senha',
-                      ),
-                      validator: (senha) => combine(
-                        [
-                          () => isNotEmpty(senha),
-                          () => hasFiveChars(senha),
-                          () => validarSenha(senha!)
-                        ],
-                      ),
-                    ),
+                        obscureText: true,
+                        controller: _confirmpasswordController,
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          hintText: 'Confirme a senha',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, preecha esse campo';
+                          } else if (value.length < 4) {
+                            return 'Informe uma senha maior e segura';
+                          } else if (_passwordController.text !=
+                              _confirmpasswordController.text) {
+                            return 'As senhas não coincidem';
+                          }
+                          return null;
+                        }),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     CustomOutlinedButton(
-                      onPressed: () async {
-                        Map<String, dynamic> res =
-                            await AccountService.createUser(
-                          _emailController.text,
-                          _passwordController.text,
-                          _nameController.text,
-                        );
-                        if (context.mounted) {
-                          showToast(context, res);
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/login', (_) => false);
-                        }
-                      },
+                      onPressed: _submit,
                       isLoading: _isLoading,
                       titulo: 'Cadastre-se',
                     ),

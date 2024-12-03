@@ -9,20 +9,21 @@ class CashFlowDatabase {
     await SharedPreferences.getInstance();
   }
 
-  static Future<void> update(CashFlow cashFlow) async {
+  static Future<void> updateAll(List<CashFlow> cashFlows) async {
     final prefs = await SharedPreferences.getInstance();
-    String cashFlowJson = jsonEncode(cashFlow.toJson());
+    String cashFlowJson = jsonEncode(cashFlows.map((e) => e.toJson()).toList());
     await prefs.setString(_cashFlowKey, cashFlowJson);
   }
 
-  static Future<CashFlow?> get() async {
+  static Future<List<CashFlow>> getAll() async {
     final prefs = await SharedPreferences.getInstance();
     String? cashFlowJson = prefs.getString(_cashFlowKey);
 
     if (cashFlowJson != null) {
-      return CashFlow.fromJson(jsonDecode(cashFlowJson));
+      List<dynamic> cashFlowList = jsonDecode(cashFlowJson);
+      return cashFlowList.map((item) => CashFlow.fromJson(item)).toList();
     }
-    return null;
+    return [];
   }
 
   static Future<void> clear() async {
@@ -30,3 +31,4 @@ class CashFlowDatabase {
     await prefs.remove(_cashFlowKey);
   }
 }
+

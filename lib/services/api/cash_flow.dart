@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:finance/services/constants.dart';
 import 'package:finance/services/headers.dart';
@@ -13,13 +12,27 @@ class CashFlowService {
       'Content-Type': 'application/json',
     };
 
-    var response = await Dio().post(
-      '${ApiConstants.basePath}/cashflow/add',
-      data: cashFlowData,
-      options: Options(headers: headers),
-    );
+    try {
+      var response = await Dio().post(
+        '${ApiConstants.basePath}/cashflow/add/',
+        data: cashFlowData,
+        options: Options(headers: headers),
+      );
 
-    return _handleResponse(response);
+      return {
+        "success": true,
+        "data": response.data,
+        "statusCode": response.statusCode,
+        "message": response.statusMessage ?? "Success",
+      };
+    } on DioException catch (e) {
+      return {
+        "success": false,
+        "data": null,
+        "statusCode": e.response?.statusCode ?? 500,
+        "message": e.response?.data['message'] ?? "Something went wrong",
+      };
+    }
   }
 
   static Future<Map<String, dynamic>> deleteCashFlow(String cashFlowId) async {
@@ -29,14 +42,27 @@ class CashFlowService {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     };
+    try {
+      var response = await Dio().post(
+        '${ApiConstants.basePath}/cashflow/delete',
+        data: {"id": cashFlowId},
+        options: Options(headers: headers),
+      );
 
-    var response = await Dio().post(
-      '${ApiConstants.basePath}/cashflow/delete',
-      data: {"id": cashFlowId},
-      options: Options(headers: headers),
-    );
-
-    return _handleResponse(response);
+      return {
+        "success": true,
+        "data": response.data,
+        "statusCode": response.statusCode,
+        "message": response.statusMessage ?? "Success",
+      };
+    } on DioException catch (e) {
+      return {
+        "success": false,
+        "data": null,
+        "statusCode": e.response?.statusCode ?? 500,
+        "message": e.response?.data['message'] ?? "Something went wrong",
+      };
+    }
   }
 
   static Future<List<dynamic>> getAllCashFlows() async {
@@ -48,7 +74,7 @@ class CashFlowService {
     };
 
     var response = await Dio().get(
-      '${ApiConstants.basePath}/cashflow/getAll',
+      '${ApiConstants.basePath}/cashflow/getAll/',
       options: Options(headers: headers),
     );
 
@@ -67,24 +93,25 @@ class CashFlowService {
       'Content-Type': 'application/json',
     };
 
-    var response = await Dio().get(
-      '${ApiConstants.basePath}/cashflow/$cashFlowId',
-      options: Options(headers: headers),
-    );
+    try {
+      var response = await Dio().get(
+        '${ApiConstants.basePath}/cashflow/$cashFlowId',
+        options: Options(headers: headers),
+      );
 
-    return _handleResponse(response);
-  }
-
-  static Map<String, dynamic> _handleResponse(Response response) {
-    if (response.statusCode == 200) {
       return {
-        "status_code": response.statusCode,
-        "data": json.decode(utf8.decode(response.data)),
+        "success": true,
+        "data": response.data,
+        "statusCode": response.statusCode,
+        "message": response.statusMessage ?? "Success",
+      };
+    } on DioException catch (e) {
+      return {
+        "success": false,
+        "data": null,
+        "statusCode": e.response?.statusCode ?? 500,
+        "message": e.response?.data['message'] ?? "Something went wrong",
       };
     }
-    return {
-      "status_code": response.statusCode,
-      "detail": json.decode(utf8.decode(response.data))['detail'],
-    };
   }
 }

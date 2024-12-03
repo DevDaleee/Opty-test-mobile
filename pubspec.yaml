@@ -17,6 +17,8 @@ dependencies:
   isar: ^3.1.0+1
   toastification: ^2.3.0
   flutter_svg: ^2.0.16
+  intl: ^0.20.1
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:
@@ -27,9 +29,16 @@ dev_dependencies:
 flutter_native_splash:
   image: assets/logo/Dlogo.png
   color: "#E4E4E4"
+  image_dark: assets/logo/Llogo.png
+  color_dark: "#36343A"
+  
   android_12:
-    image: assets/icons/laucher_icon.png
-    color: "#E4E4E4"
+    image: assets/icons/Dlogo.png
+    icon_background_color: "#E4E4E4"
+    image_dark: assets/icons/Llogo
+    icon_background_color_dark: "#36343A"
+
+  web: false
 
 flutter:
   uses-material-design: true

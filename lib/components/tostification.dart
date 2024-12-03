@@ -3,7 +3,8 @@ import 'package:toastification/toastification.dart';
 
 void showToast(BuildContext context, Map<String, dynamic> response) {
   ToastificationType type;
-  if (response['status_code'] == 200 || response['status_code'] == 201) {
+
+  if (response['success'] == true) {
     type = ToastificationType.success;
   } else {
     type = ToastificationType.error;
@@ -11,8 +12,8 @@ void showToast(BuildContext context, Map<String, dynamic> response) {
 
   toastification.show(
     context: context,
-    title: Text(type == ToastificationType.success ? "Successo!" : "Erro!"),
-    description: Text(response['data']),
+    title: Text(type == ToastificationType.success ? "Sucesso!" : "Erro!"),
+    description: Text(response['message'] ?? "Ocorreu um problema"),
     type: type,
     autoCloseDuration: const Duration(seconds: 3),
     animationDuration: const Duration(milliseconds: 300),

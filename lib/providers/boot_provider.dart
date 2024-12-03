@@ -21,7 +21,7 @@ class BootProvider extends ChangeNotifier {
           if (updatedUser['status_code'] == 200) {
             await reconfigUserData(context, updatedUser['data']);
           } else {
-            _initializeProviders(context, user);
+            initializeProviders(context, user);
           }
         }
         return '/home';
@@ -36,19 +36,41 @@ class BootProvider extends ChangeNotifier {
     await UserDatabase.update(user);
 
     if (context.mounted) {
-      _initializeProviders(context, user);
+      await initializeProviders(context, user);
     }
     debugPrint('User data updated');
   }
 
-  void _initializeProviders(BuildContext context, UserProfile user) async {
+  Future<void> initializeProviders(
+      BuildContext context, UserProfile user) async {
     context.read<UserProvider>().user = user;
-    List<dynamic> cashFlowsData = await CashFlowService.getAllCashFlows();
+
+    List<dynamic> remoteCashFlows = await CashFlowService.getAllCashFlows();
 
     if (context.mounted) {
-      context.read<CashFlowProvider>().cashFlow = cashFlowsData.map((json) {
-        return CashFlow.fromJson(json);
-      }).toList();
+      CashFlowProvider provider = context.read<CashFlowProvider>();
+
+      await provider.loadFromDatabase();
+
+      List<CashFlow> mergedCashFlows = _mergeCashFlows(
+        provider.cashFlow,
+        remoteCashFlows.map((json) => CashFlow.fromJson(json)).toList(),
+      );
+
+      provider.cashFlow = mergedCashFlows;
+      await provider.updateDatabase();
     }
+  }
+
+  List<CashFlow> _mergeCashFlows(
+    List<dynamic> localCashFlows,
+    List<CashFlow> remoteCashFlows,
+  ) {
+    List<CashFlow> local = localCashFlows.cast<CashFlow>();
+    Map<String, CashFlow> combinedMap = {
+      for (var cashFlow in local) cashFlow.id: cashFlow,
+      for (var cashFlow in remoteCashFlows) cashFlow.id: cashFlow,
+    };
+    return combinedMap.values.toList();
   }
 }

@@ -2,12 +2,15 @@
 
 import 'package:finance/components/buttons/custom_filled_button.dart';
 import 'package:finance/components/buttons/custom_outlined_button.dart';
+import 'package:finance/components/helper/regex.dart';
 import 'package:finance/components/helper/sizes.dart';
-import 'package:finance/components/helper/validation_mixin.dart';
+import 'package:finance/components/tostification.dart';
 import 'package:finance/data/usar_database.dart';
 import 'package:finance/models/user_models.dart';
+import 'package:finance/providers/cash_flow_provider.dart';
 import 'package:finance/providers/user_provider.dart';
 import 'package:finance/services/api/account.dart';
+import 'package:finance/services/api/cash_flow.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,30 +21,43 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with ValidationsMixin {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool isLoading = false;
 
   configUserData(BuildContext context) async {
-    var userProfile =
-        await AccountService.getUserByEmail(_emailController.text);
-    var user = UserProfile.fromJson(userProfile.data);
-    context.read<UserProvider>().user = user;
+    var response = await AccountService.getUserByEmail(_emailController.text);
 
-    if (user.email!.isNotEmpty) {
-      await UserDatabase.update(user);
+    if (response['success'] && response['data'] != null) {
+      var user = UserProfile.fromJson(response['data']);
+      context.read<UserProvider>().user = user;
+      if (user.email!.isNotEmpty) {
+        await UserDatabase.update(user);
 
-      initializeProviders(user);
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+        initializeProviders(user);
+
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      } else {
+        Navigator.pushNamed(context, '/login');
+      }
     } else {
+      showToast(
+        context,
+        {
+          'statusCode': response['statusCode'],
+          'message': response['message'] ?? 'Failed to retrieve user',
+        },
+      );
       Navigator.pushNamed(context, '/login');
     }
   }
 
-  initializeProviders(UserProfile user) {
+  initializeProviders(UserProfile user) async {
     context.read<UserProvider>().user = user;
+    context.read<CashFlowProvider>().cashFlow =
+        await CashFlowService.getAllCashFlows();
   }
 
   @override
@@ -75,18 +91,18 @@ class _LoginPageState extends State<LoginPage> with ValidationsMixin {
                 child: Column(
                   children: [
                     TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(hintText: 'Email'),
-                      validator: (email) => combine(
-                        [
-                          () => isNotEmpty(email),
-                          () => hasFiveChars(email),
-                          () => validacaoEmail(email!),
-                        ],
-                      ),
-                    ),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(hintText: 'Email'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, preecha esse campo';
+                          } else if (!emailRegex.hasMatch(value)) {
+                            return 'Informe um email válido';
+                          }
+                          return null;
+                        }),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     TextFormField(
                       obscureText: true,
@@ -95,13 +111,14 @@ class _LoginPageState extends State<LoginPage> with ValidationsMixin {
                       decoration: const InputDecoration(
                         hintText: 'Senha',
                       ),
-                      validator: (senha) => combine(
-                        [
-                          () => isNotEmpty(senha),
-                          () => hasFiveChars(senha),
-                          () => validarSenha(senha!)
-                        ],
-                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preecha esse campo';
+                        } else if (value.length < 4) {
+                          return 'Informe uma senha maior e segura';
+                        }
+                        return null;
+                      },
                     ),
                     // Align(
                     //   alignment: Alignment.centerRight,
