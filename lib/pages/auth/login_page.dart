@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:finance/components/custom_form_field.dart';
+import 'package:finance/models/cash_flow_models.dart';
+import 'package:flutter/material.dart';
 import 'package:finance/components/buttons/custom_filled_button.dart';
 import 'package:finance/components/buttons/custom_outlined_button.dart';
 import 'package:finance/components/helper/regex.dart';
@@ -11,7 +14,6 @@ import 'package:finance/providers/cash_flow_provider.dart';
 import 'package:finance/providers/user_provider.dart';
 import 'package:finance/services/api/account.dart';
 import 'package:finance/services/api/cash_flow.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -27,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool isLoading = false;
 
-  configUserData(BuildContext context) async {
+  Future<void> configUserData(BuildContext context) async {
     var response = await AccountService.getUserByEmail(_emailController.text);
 
     if (response['success'] && response['data'] != null) {
@@ -35,8 +37,7 @@ class _LoginPageState extends State<LoginPage> {
       context.read<UserProvider>().user = user;
       if (user.email!.isNotEmpty) {
         await UserDatabase.update(user);
-
-        initializeProviders(user);
+        await initializeProviders(context, user);
 
         Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
       } else {
@@ -54,10 +55,37 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  initializeProviders(UserProfile user) async {
+  Future<void> initializeProviders(
+      BuildContext context, UserProfile user) async {
     context.read<UserProvider>().user = user;
-    context.read<CashFlowProvider>().cashFlow =
-        await CashFlowService.getAllCashFlows();
+
+    List<dynamic> remoteCashFlows = await CashFlowService.getAllCashFlows();
+
+    if (context.mounted) {
+      CashFlowProvider provider = context.read<CashFlowProvider>();
+
+      await provider.loadFromDatabase();
+
+      List<CashFlow> mergedCashFlows = _mergeCashFlows(
+        provider.cashFlow,
+        remoteCashFlows.map((json) => CashFlow.fromJson(json)).toList(),
+      );
+
+      provider.cashFlow = mergedCashFlows;
+      await provider.updateDatabase();
+    }
+  }
+
+  List<CashFlow> _mergeCashFlows(
+    List<dynamic> localCashFlows,
+    List<CashFlow> remoteCashFlows,
+  ) {
+    List<CashFlow> local = localCashFlows.cast<CashFlow>();
+    Map<String, CashFlow> combinedMap = {
+      for (var cashFlow in local) cashFlow.id: cashFlow,
+      for (var cashFlow in remoteCashFlows) cashFlow.id: cashFlow,
+    };
+    return combinedMap.values.toList();
   }
 
   @override
@@ -90,27 +118,34 @@ class _LoginPageState extends State<LoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(hintText: 'Email'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, preecha esse campo';
-                          } else if (!emailRegex.hasMatch(value)) {
-                            return 'Informe um email válido';
-                          }
-                          return null;
-                        }),
+                    CustomTextField(
+                      filled: true,
+                      label: 'Email',
+                      borderColor: Theme.of(context)
+                          .colorScheme
+                          .inversePrimary
+                          .withOpacity(0.2),
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preecha esse campo';
+                        } else if (!emailRegex.hasMatch(value)) {
+                          return 'Informe um email válido';
+                        }
+                        return null;
+                      },
+                    ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    TextFormField(
-                      obscureText: true,
+                    CustomTextField(
+                      filled: true,
+                      label: 'Senha',
+                      borderColor: Theme.of(context)
+                          .colorScheme
+                          .inversePrimary
+                          .withOpacity(0.2),
                       controller: _passwordController,
-                      textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                        hintText: 'Senha',
-                      ),
+                      obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, preecha esse campo';
@@ -120,32 +155,23 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    // Align(
-                    //   alignment: Alignment.centerRight,
-                    //   child: TextButton(
-                    //     onPressed: () {},
-                    //     child: const Text(
-                    //       'Esqueci a senha',
-                    //       style: TextStyle(
-                    //         fontSize: 14,
-                    //         color: Color(0xff3F6784),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     CustomFilledButton(
                       onPressed: () async {
-                        isLoading = true;
-                        await AccountService.login(
-                          _emailController.text,
-                          _passwordController.text,
-                        );
-                        if (context.mounted) {
-                          isLoading = false;
-                          configUserData(context);
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/home', (_) => false);
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          await AccountService.login(
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+                          if (context.mounted) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            await configUserData(context);
+                          }
                         }
                       },
                       isLoading: isLoading,
@@ -159,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.2)
+              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
             ],
           ),
         ),

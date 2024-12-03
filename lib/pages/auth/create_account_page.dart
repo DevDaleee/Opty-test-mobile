@@ -1,11 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:finance/components/custom_form_field.dart';
+import 'package:flutter/material.dart';
 import 'package:finance/components/buttons/custom_outlined_button.dart';
 import 'package:finance/components/helper/regex.dart';
 import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/components/tostification.dart';
 import 'package:finance/services/api/account.dart';
-import 'package:flutter/material.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({super.key});
@@ -22,7 +23,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final _confirmpasswordController = TextEditingController();
   bool _isLoading = false;
 
-  _submit() async {
+  Future<void> _submit() async {
     if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
@@ -34,8 +35,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       _nameController.text,
     );
 
-    setState(
-        () => _isLoading = false);
+    setState(() => _isLoading = false);
+
     if (res['success']) {
       showToast(context, res);
       Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
@@ -73,25 +74,30 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                        controller: _nameController,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(hintText: 'Nome'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, preecha esse campo';
-                          }
-                          return null;
-                        }),
+                    CustomTextField(
+                      enabled: true,
+                      filled: true,
+                      label: 'Nome',
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preencha esse campo';
+                        }
+                        return null;
+                      },
+                    ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    TextFormField(
+                    CustomTextField(
+                      enabled: true,
+                      filled: true,
+                      label: 'Email',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(hintText: 'Email'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
+                          return 'Por favor, preencha esse campo';
                         } else if (!emailRegex.hasMatch(value)) {
                           return 'Informe um email válido';
                         }
@@ -99,16 +105,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    TextFormField(
+                    CustomTextField(
+                      enabled: true,
+                      filled: true,
+                      label: 'Senha',
                       obscureText: true,
                       controller: _passwordController,
-                      textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                        hintText: 'Senha',
-                      ),
+                      textInputAction: TextInputAction.next,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor, preecha esse campo';
+                          return 'Por favor, preencha esse campo';
                         } else if (value.length < 4) {
                           return 'Informe uma senha maior e segura';
                         } else if (_passwordController.text !=
@@ -119,24 +125,24 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    TextFormField(
-                        obscureText: true,
-                        controller: _confirmpasswordController,
-                        textInputAction: TextInputAction.done,
-                        decoration: const InputDecoration(
-                          hintText: 'Confirme a senha',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, preecha esse campo';
-                          } else if (value.length < 4) {
-                            return 'Informe uma senha maior e segura';
-                          } else if (_passwordController.text !=
-                              _confirmpasswordController.text) {
-                            return 'As senhas não coincidem';
-                          }
-                          return null;
-                        }),
+                    CustomTextField(
+                      enabled: true,
+                      filled: true,
+                      label: 'Confirme a senha',
+                      obscureText: true,
+                      controller: _confirmpasswordController,
+                      textInputAction: TextInputAction.done,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, preencha esse campo';
+                        } else if (value.length < 4) {
+                          return 'Informe uma senha maior e segura';
+                        } else if (_passwordController.text != value) {
+                          return 'As senhas não coincidem';
+                        }
+                        return null;
+                      },
+                    ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     CustomOutlinedButton(
                       onPressed: _submit,
@@ -146,7 +152,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   ],
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02)
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
             ],
           ),
         ),

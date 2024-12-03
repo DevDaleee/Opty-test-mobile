@@ -13,17 +13,11 @@ class CashFlowProvider extends ChangeNotifier {
   final List<bool> _selectedFilterValues = [false, false, false, true, false];
   int _selectedFilterIndex = 3;
   Category pickedCategory = Category.FOOD;
-  bool _isCashIn = true;
+  bool? isCashIn = true;
 
   List<dynamic> get cashFlow => _cashFlow;
   List<dynamic> get filteredCashFlow => _filteredCashFlow;
   int get selectedFilterIndex => _selectedFilterIndex;
-  bool get isCashIn => _isCashIn;
-
-  set isCashIn(bool isCashIn) {
-    _isCashIn = isCashIn;
-    notifyListeners();
-  }
 
   set cashFlow(List<dynamic> cashFlows) {
     _cashFlow = cashFlows;
@@ -31,6 +25,23 @@ class CashFlowProvider extends ChangeNotifier {
     _cashInAndCashOut();
     updateDatabase();
     filter(2);
+    notifyListeners();
+  }
+
+  void toggleIsCashIn() {
+    isCashIn = !isCashIn!;
+    notifyListeners();
+  }
+
+  void removeCashFlowById(String cashFlowId) {
+    _cashFlow.removeWhere((flow) => flow.id == cashFlowId);
+    _filteredCashFlow = _cashFlow;
+    notifyListeners();
+  }
+
+  void addCashFlow(CashFlow newCashFlow) {
+    _cashFlow.add(newCashFlow);
+    _filteredCashFlow = _cashFlow;
     notifyListeners();
   }
 
@@ -79,7 +90,12 @@ class CashFlowProvider extends ChangeNotifier {
 
   double _calculateTotalBalance() {
     return _cashFlow.fold(0.0, (sum, item) {
-      return item.isCashIn! ? sum + item.amount! : sum - item.amount!;
+      if (item is CashFlow) {
+        return item.isCashIn! ? sum + item.amount! : sum - item.amount!;
+      } else {
+        debugPrint('Item ignorado no cálculo: $item');
+        return sum;
+      }
     });
   }
 

@@ -65,6 +65,38 @@ class CashFlowService {
     }
   }
 
+  static Future<Map<String, dynamic>> updateCashFlow(
+      String cashFlowId, Map<String, dynamic> updateData) async {
+    var token = await HeadersConfig.readAccessToken();
+
+    var headers = <String, String>{
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      var response = await Dio().put(
+        '${ApiConstants.basePath}/cashflow/$cashFlowId',
+        data: updateData,
+        options: Options(headers: headers),
+      );
+
+      return {
+        "success": true,
+        "data": response.data,
+        "statusCode": response.statusCode,
+        "message": response.statusMessage ?? "Success",
+      };
+    } on DioException catch (e) {
+      return {
+        "success": false,
+        "data": null,
+        "statusCode": e.response?.statusCode ?? 500,
+        "message": e.response?.data['message'] ?? "Something went wrong",
+      };
+    }
+  }
+
   static Future<List<dynamic>> getAllCashFlows() async {
     var token = await HeadersConfig.readAccessToken();
 

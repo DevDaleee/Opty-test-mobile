@@ -1,6 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:finance/components/buttons/custom_filled_button.dart';
 import 'package:finance/components/helper/colors.dart';
 import 'package:finance/components/helper/sizes.dart';
+import 'package:finance/components/custom_form_field.dart';
 import 'package:finance/components/tostification.dart';
 import 'package:finance/models/cash_flow_models.dart';
 import 'package:finance/providers/cash_flow_provider.dart';
@@ -23,6 +27,30 @@ class _AddCashFlowState extends State<AddCashFlow> {
   final _amountController = TextEditingController();
   DateTime? selectedDate = DateTime.now();
   bool isCashIn = true;
+  bool isLoading = false;
+
+  onAddFlow(Map<String, dynamic> cashFlowData) async {
+    var response = await CashFlowService.addCashFlow(cashFlowData);
+    if (response['success'] == true) {
+      var newCashFlow = CashFlow.fromJson(response['data']);
+      var provider = context.read<CashFlowProvider>();
+
+      provider.cashFlow = [...provider.cashFlow, newCashFlow];
+
+      showToast(context, response);
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/home',
+        (_) => false,
+      );
+    } else {
+      showToast(context, {
+        'statusCode': response['statusCode'],
+        'message': response['message'] ?? 'Erro ao adicionar a movimentação',
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +73,11 @@ class _AddCashFlowState extends State<AddCashFlow> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Campo: Título
-                    TextFormField(
+                    CustomTextField(
+                      filled: true,
                       controller: _titleController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(hintText: 'Título'),
+                      label: 'Título',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, preecha esse campo';
@@ -58,21 +86,19 @@ class _AddCashFlowState extends State<AddCashFlow> {
                       },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Campo: Descrição
-                    TextFormField(
+                    CustomTextField(
+                      filled: true,
                       controller: _descriptionController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(hintText: 'Descrição'),
+                      label: 'Descrição',
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Campo: Valor
-                    TextFormField(
+                    CustomTextField(
+                      filled: true,
                       controller: _amountController,
                       textInputAction: TextInputAction.done,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(hintText: 'Valor'),
+                      label: 'Valor',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, preecha esse campo';
@@ -81,8 +107,6 @@ class _AddCashFlowState extends State<AddCashFlow> {
                       },
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Botão: Seletor de Data
                     OutlinedButton(
                       onPressed: () async {
                         final DateTime? picked = await showDatePicker(
@@ -107,8 +131,6 @@ class _AddCashFlowState extends State<AddCashFlow> {
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Dropdown: Categoria
                     Column(
                       children: [
                         Text(
@@ -175,12 +197,10 @@ class _AddCashFlowState extends State<AddCashFlow> {
                       ],
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Botão: Entrada/Saída
                     GestureDetector(
-                      onTap: () => provider.isCashIn = !provider.isCashIn,
+                      onTap: () => provider.toggleIsCashIn(),
                       child: Card(
-                        color: provider.isCashIn
+                        color: provider.isCashIn!
                             ? namedColors['blue']!.withOpacity(0.75)
                             : namedColors['red']!.withOpacity(0.75),
                         child: Padding(
@@ -190,9 +210,9 @@ class _AddCashFlowState extends State<AddCashFlow> {
                             vertical: PaddingSizes.lg,
                           ),
                           child: Text(
-                            provider.isCashIn ? 'Entrada' : 'Saída',
+                            provider.isCashIn! ? 'Entrada' : 'Saída',
                             style: TextStyle(
-                              color: provider.isCashIn
+                              color: provider.isCashIn!
                                   ? Theme.of(context).colorScheme.surface
                                   : Theme.of(context)
                                       .colorScheme
@@ -203,12 +223,12 @@ class _AddCashFlowState extends State<AddCashFlow> {
                         ),
                       ),
                     ),
-
-                    // Botão: Salvar
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    ElevatedButton(
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                    CustomFilledButton(
+                      isLoading: isLoading,
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
+                          isLoading = true;
                           Map<String, dynamic> data = {
                             "reason": _titleController.text,
                             "description": _descriptionController.text,
@@ -218,20 +238,10 @@ class _AddCashFlowState extends State<AddCashFlow> {
                             "isCashIn": provider.isCashIn,
                             "createdAt": selectedDate!.toIso8601String(),
                           };
-                          Map<String, dynamic> response =
-                              await CashFlowService.addCashFlow(data);
-                          if (context.mounted) {
-                            showToast(context, response);
-                            await 
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              '/home',
-                              (_) => false,
-                            );
-                          }
+                          await onAddFlow(data);
                         }
                       },
-                      child: const Text('Salvar'),
+                      titulo: 'Salvar',
                     ),
                   ],
                 ),

@@ -1,3 +1,4 @@
+import 'package:finance/pages/flow/edit_cashflow.dart';
 import 'package:finance/pages/routes.dart';
 import 'package:finance/providers/providers.dart';
 import 'package:finance/theme/theme.dart';
@@ -17,6 +18,28 @@ class MyApp extends StatelessWidget {
         darkTheme: darkMode,
         themeMode: ThemeMode.system,
         routes: namedRoutes,
+        onGenerateRoute: (settings) {
+          if (settings.name == '/edit-cashFlow') {
+            final args = settings.arguments as Map<String, dynamic>?;
+            if (args != null && args.containsKey('cashFlowId')) {
+              return MaterialPageRoute(
+                builder: (context) =>
+                    EditCashFlow(cashFlowId: args['cashFlowId']),
+              );
+            }
+            return MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: Center(child: Text('Invalid or missing arguments.')),
+              ),
+            );
+          }
+          return null; // Let unknown routes fall through to `onUnknownRoute`.
+        },
+        onUnknownRoute: (settings) => MaterialPageRoute(
+          builder: (context) => const Scaffold(
+            body: Center(child: Text('Page not found.')),
+          ),
+        ),
       ),
     );
   }

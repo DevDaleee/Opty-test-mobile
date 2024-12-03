@@ -129,16 +129,26 @@ class _HomePageState extends State<HomePage> {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: provider.filteredCashFlow.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return HistoryCard(
-                              title: provider.cashFlow[index].reason ??
-                                  'Sem motivo',
-                              date: provider.cashFlow[index].createdAt ??
-                                  DateTime.now(),
-                              value: provider.cashFlow[index].amount
-                                      ?.toStringAsFixed(2) ??
-                                  '0.00',
-                              isCashIn:
-                                  provider.cashFlow[index].isCashIn ?? true,
+                            return GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                '/edit-cashFlow',
+                                arguments: {
+                                  'cashFlowId':
+                                      provider.cashFlow[index]!.id,
+                                },
+                              ),
+                              child: HistoryCard(
+                                title: provider.cashFlow[index].reason ??
+                                    'Sem motivo',
+                                date: provider.cashFlow[index].createdAt ??
+                                    DateTime.now(),
+                                value: provider.cashFlow[index].amount
+                                        ?.toStringAsFixed(2) ??
+                                    '0.00',
+                                isCashIn:
+                                    provider.cashFlow[index].isCashIn ?? true,
+                              ),
                             );
                           },
                         ),
