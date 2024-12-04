@@ -14,13 +14,13 @@ dependencies:
   shared_preferences: ^2.3.3
   provider: ^6.1.2
   flutter_native_splash: ^2.4.3
-  isar: ^3.1.0+1
   toastification: ^2.3.0
   flutter_svg: ^2.0.16
   intl: ^0.20.1
   dropdown_button2: ^2.3.9
   fl_chart: ^0.69.2
   flutter_speed_dial: ^7.0.0
+  icons_launcher: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -35,17 +35,36 @@ flutter_native_splash:
   color_dark: "#36343A"
   
   android_12:
-    image: assets/icons/Dlogo.png
+    image: assets/logo/Dlogo.png
     icon_background_color: "#E4E4E4"
-    image_dark: assets/icons/Llogo
+    image_dark: assets/logo/Llogo
     icon_background_color_dark: "#36343A"
 
   web: false
+
+icons_launcher:
+  image_path: "assets/logo/appIcon/DIcon.jpg"
+  platforms:
+    android:
+      enable: true
+      image_path: "assets/logo/appIcon/DIcon.jpg"
+      notification_image: "assets/logo/appIcon/DIcon.jpg"
+      adaptive_background_image: "assets/logo/appIcon/DIcon.jpg"
+      adaptive_foreground_image: "assets/logo/appIcon/DIcon.jpg"
+      adaptive_round_image: "assets/logo/appIcon/DIcon.jpg"
+      adaptive_monochrome_image: "assets/logo/appIcon/DIcon.jpg"
+    ios:
+      enable: true
+      image_path: "assets/logo/appIcon/DIcon.jpg"
+      # For iOS 18+ (support dark and tinted)
+      dark_path: "assets/logo/appIcon/DIcon.jpg"
+      tinted_path: "assets/logo/appIcon/DIcon.jpg"
 
 flutter:
   uses-material-design: true
   
   assets:
+    - assets/logo/appIcon/DIcon.jpg
     - assets/logo/Dlogo.png
     - assets/logo/Llogo.png
     - assets/icons/icon-money.png
