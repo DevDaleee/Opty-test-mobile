@@ -128,26 +128,28 @@ class _HomePageState extends State<HomePage> {
                       : ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: provider.filteredCashFlow.length,
+                          itemCount: provider.filteredCashFlow
+                              .length, // Use o filteredCashFlow
                           itemBuilder: (BuildContext context, int index) {
+                            final cashFlowItem = provider.filteredCashFlow[
+                                index]; // Acesse o item filtrado diretamente
+
                             return GestureDetector(
                               onTap: () => Navigator.pushNamed(
                                 context,
                                 '/detail-cashFlow',
                                 arguments: {
-                                  'cashFlowId': provider.cashFlow[index]!.id,
+                                  'cashFlowId':
+                                      cashFlowItem.id, // Use o item filtrado
                                 },
                               ),
                               child: HistoryCard(
-                                title: provider.cashFlow[index].reason ??
-                                    'Sem motivo',
-                                date: provider.cashFlow[index].createdAt ??
-                                    DateTime.now(),
-                                value: provider.cashFlow[index].amount
-                                        ?.toStringAsFixed(2) ??
-                                    '0.00',
-                                isCashIn:
-                                    provider.cashFlow[index].isCashIn ?? true,
+                                title: cashFlowItem.reason ?? 'Sem motivo',
+                                date: cashFlowItem.createdAt ?? DateTime.now(),
+                                value:
+                                    cashFlowItem.amount?.toStringAsFixed(2) ??
+                                        '0.00',
+                                isCashIn: cashFlowItem.isCashIn ?? true,
                               ),
                             );
                           },

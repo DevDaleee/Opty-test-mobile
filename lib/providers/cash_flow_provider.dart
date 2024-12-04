@@ -141,6 +141,8 @@ class CashFlowProvider extends ChangeNotifier {
   }
 
   void filter(int filterIndex) {
+    _filteredCashFlow = [];
+
     for (int i = 0; i < _selectedFilterValues.length; i++) {
       _selectedFilterValues[i] = i == filterIndex;
     }
@@ -157,24 +159,19 @@ class CashFlowProvider extends ChangeNotifier {
             _cashFlow.where((value) => value.isCashIn == false).toList();
         break;
 
-      case 2: // Ordenado por proximidade da data
-        _filteredCashFlow =
-            _cashFlow.where((value) => value.createdAt != null).toList()
-              ..sort((a, b) {
-                return a.createdAt!
-                    .difference(DateTime.now())
-                    .compareTo(b.createdAt!.difference(DateTime.now()).abs());
-              });
+      case 2: // Ordenado por proximidade da data (mais recente primeiro)
+        _filteredCashFlow = List.from(_cashFlow)
+          ..sort((a, b) {
+            return b.createdAt!.compareTo(a.createdAt!);
+          });
+
         break;
 
-      case 3: // Ordenado por data mais distante
-        _filteredCashFlow =
-            _cashFlow.where((value) => value.createdAt != null).toList()
-              ..sort((a, b) {
-                return b.createdAt!
-                    .difference(DateTime.now())
-                    .compareTo(a.createdAt!.difference(DateTime.now()));
-              });
+      case 3: // Ordenado por data mais antiga (mais distante primeiro)
+        _filteredCashFlow = List.from(_cashFlow)
+          ..sort((a, b) {
+            return a.createdAt!.compareTo(b.createdAt!);
+          });
         break;
 
       default:

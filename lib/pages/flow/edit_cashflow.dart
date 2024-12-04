@@ -27,10 +27,10 @@ class _EditCashFlowState extends State<EditCashFlow> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _amountController;
-  DateTime? selectedDate;
-  late bool isCashIn;
-  bool isLoading = false;
+  late bool? isCashIn;
   late CashFlow selectedCashFlow;
+  DateTime? selectedDate;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -51,7 +51,6 @@ class _EditCashFlowState extends State<EditCashFlow> {
     _titleController.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
-    isCashIn = false;
     super.dispose();
   }
 
