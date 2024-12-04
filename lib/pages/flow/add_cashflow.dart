@@ -3,6 +3,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:finance/components/buttons/custom_filled_button.dart';
 import 'package:finance/components/helper/colors.dart';
+import 'package:finance/components/helper/converters.dart';
 import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/components/custom_form_field.dart';
 import 'package:finance/components/tostification.dart';
@@ -170,7 +171,7 @@ class _AddCashFlowState extends State<AddCashFlow> {
                               items: Category.values.map(
                                 (category) {
                                   String categoryName =
-                                      provider.getStringFromCategory(category);
+                                      getStringFromCategory(category);
                                   return DropdownMenuItem<String>(
                                     value: categoryName,
                                     child: Text(
@@ -184,7 +185,7 @@ class _AddCashFlowState extends State<AddCashFlow> {
                                   );
                                 },
                               ).toList(),
-                              value: provider.getStringFromCategory(
+                              value: getStringFromCategory(
                                   provider.pickedCategory),
                               onChanged: (String? value) {
                                 if (value != null) {
@@ -198,7 +199,7 @@ class _AddCashFlowState extends State<AddCashFlow> {
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     GestureDetector(
-                      onTap: () => provider.toggleIsCashIn(),
+                      onTap: () => provider.toggleIsCashIn(!provider.isCashIn!),
                       child: Card(
                         color: provider.isCashIn!
                             ? namedColors['blue']!.withOpacity(0.75)
@@ -232,8 +233,8 @@ class _AddCashFlowState extends State<AddCashFlow> {
                           Map<String, dynamic> data = {
                             "reason": _titleController.text,
                             "description": _descriptionController.text,
-                            "category": provider
-                                .getStringFromCategory(provider.pickedCategory),
+                            "category":
+                                getStringFromCategory(provider.pickedCategory),
                             "amount": double.parse(_amountController.text),
                             "isCashIn": provider.isCashIn,
                             "createdAt": selectedDate!.toIso8601String(),

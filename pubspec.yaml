@@ -19,6 +19,7 @@ dependencies:
   flutter_svg: ^2.0.16
   intl: ^0.20.1
   dropdown_button2: ^2.3.9
+  fl_chart: ^0.69.2
 
 dev_dependencies:
   flutter_test:

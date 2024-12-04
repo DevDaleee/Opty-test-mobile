@@ -29,6 +29,7 @@ class CashFlow {
     required this.createdAt,
     required this.userId,
   });
+  
   factory CashFlow.fromJson(Map<String, dynamic> json) {
     return CashFlow(
       id: json['id'] as String,
@@ -57,22 +58,21 @@ class CashFlow {
     };
   }
   static Category? _getCategoryFromString(String? categoryString) {
-    if (categoryString == null) return null;
-    switch (categoryString.toUpperCase()) {
-      case 'HEALTH':
+    switch (categoryString) {
+      case 'Saúde':
         return Category.HEALTH;
-      case 'HOUSING':
+      case 'Casa':
         return Category.HOUSING;
-      case 'INVESTMENTS':
+      case 'Investimentos':
         return Category.INVESTMENTS;
-      case 'FOOD':
+      case 'Comida':
         return Category.FOOD;
-      case 'INSURE':
+      case 'Entretenimento':
         return Category.INSURE;
-      case 'OTHER':
+      case 'Outro':
         return Category.OTHER;
       default:
-        return null;
+        return Category.OTHER;
     }
   }
 }

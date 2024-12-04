@@ -1,8 +1,11 @@
+import 'package:finance/components/buttons/custom_outlined_button.dart';
 import 'package:finance/components/cards/cashFlow_card.dart';
 import 'package:finance/components/cards/history_card.dart';
 import 'package:finance/components/helper/colors.dart';
+import 'package:finance/components/helper/converters.dart';
 import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/components/option_menu.dart';
+import 'package:finance/pages/charts/charts_hub.dart';
 import 'package:finance/providers/cash_flow_provider.dart';
 import 'package:finance/providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -101,8 +104,7 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(provider
-                          .getSelectedFilter(provider.selectedFilterIndex)),
+                      Text(getSelectedFilter(provider.selectedFilterIndex)),
                       ElevatedButton(
                         key: iconKey,
                         onPressed: () {
@@ -116,6 +118,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                CustomOutlinedButton(
+                  titulo: 'titulo',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          Charts(cashFlows: provider.cashFlow),
+                    ),
                   ),
                 ),
                 Center(
@@ -132,10 +144,9 @@ class _HomePageState extends State<HomePage> {
                             return GestureDetector(
                               onTap: () => Navigator.pushNamed(
                                 context,
-                                '/edit-cashFlow',
+                                '/detail-cashFlow',
                                 arguments: {
-                                  'cashFlowId':
-                                      provider.cashFlow[index]!.id,
+                                  'cashFlowId': provider.cashFlow[index]!.id,
                                 },
                               ),
                               child: HistoryCard(

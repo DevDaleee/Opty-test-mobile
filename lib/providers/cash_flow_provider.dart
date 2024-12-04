@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:finance/components/helper/converters.dart';
 import 'package:finance/models/cash_flow_models.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,9 +29,37 @@ class CashFlowProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleIsCashIn() {
-    isCashIn = !isCashIn!;
+  void toggleIsCashIn(bool? newIsCashIn) {
+    isCashIn = newIsCashIn ?? !isCashIn!;
     notifyListeners();
+  }
+
+  Map<String, double> getExpensesByCategory() {
+    Map<String, double> expenses = {};
+
+    for (var flow in _cashFlow) {
+      if (flow.isCashIn == false) {
+        String category = getStringFromCategory(flow.category);
+        expenses[category] = (expenses[category] ?? 0) + flow.amount!;
+      }
+    }
+
+    return expenses;
+  }
+
+  Map<String, double> getMonthlyExpenses() {
+    Map<String, double> monthlyExpenses = {};
+
+    for (var flow in _cashFlow) {
+      if (flow.isCashIn == false) {
+        String monthYear =
+            '${getMonthByNumber(flow.createdAt?.month)}-${flow.createdAt?.year}';
+        monthlyExpenses[monthYear] =
+            (monthlyExpenses[monthYear] ?? 0) + flow.amount!;
+      }
+    }
+
+    return monthlyExpenses;
   }
 
   void removeCashFlowById(String cashFlowId) {
@@ -66,6 +95,14 @@ class CashFlowProvider extends ChangeNotifier {
     String cashFlowJson =
         jsonEncode(_cashFlow.map((item) => item.toJson()).toList());
     await prefs.setString('cashFlow_data', cashFlowJson);
+  }
+
+  void updateCashFlow(String id, CashFlow updatedCashFlow) {
+    var index = _cashFlow.indexWhere((flow) => flow.id == id);
+    if (index != -1) {
+      _cashFlow[index] = updatedCashFlow;
+      notifyListeners();
+    }
   }
 
   void updateCategoryChoosed(String value) {
@@ -140,56 +177,5 @@ class CashFlowProvider extends ChangeNotifier {
         _filteredCashFlow = _cashFlow;
     }
     notifyListeners();
-  }
-
-  String getSelectedFilter(int selectedFilterIndex) {
-    switch (selectedFilterIndex) {
-      case 0:
-        return 'Somente Entradas';
-      case 1:
-        return 'Somente Saídas';
-      case 2:
-        return 'Mais Recente';
-      case 3:
-        return 'Mais Antigo';
-      default:
-        return 'Mais Recente';
-    }
-  }
-
-  Category getCategoryFromString(String categoryString) {
-    switch (categoryString) {
-      case 'Saúde':
-        return Category.HEALTH;
-      case 'Casa':
-        return Category.HOUSING;
-      case 'Investimentos':
-        return Category.INVESTMENTS;
-      case 'Comida':
-        return Category.FOOD;
-      case 'Entretenimento':
-        return Category.INSURE;
-      case 'Outro':
-        return Category.OTHER;
-      default:
-        throw Exception('Categoria desconhecida: $categoryString');
-    }
-  }
-
-  String getStringFromCategory(Category category) {
-    switch (category) {
-      case Category.HEALTH:
-        return 'Saúde';
-      case Category.HOUSING:
-        return 'Casa';
-      case Category.INVESTMENTS:
-        return 'Investimentos';
-      case Category.FOOD:
-        return 'Comida';
-      case Category.INSURE:
-        return 'Entretenimento';
-      case Category.OTHER:
-        return 'Outro';
-    }
   }
 }

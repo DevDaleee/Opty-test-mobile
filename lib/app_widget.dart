@@ -1,4 +1,4 @@
-import 'package:finance/pages/flow/edit_cashflow.dart';
+import 'package:finance/pages/flow/details_cashflow.dart';
 import 'package:finance/pages/routes.dart';
 import 'package:finance/providers/providers.dart';
 import 'package:finance/theme/theme.dart';
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
             if (args != null && args.containsKey('cashFlowId')) {
               return MaterialPageRoute(
                 builder: (context) =>
-                    EditCashFlow(cashFlowId: args['cashFlowId']),
+                    DetailsCashFlow(cashFlowId: args['cashFlowId']),
               );
             }
             return MaterialPageRoute(
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          return null; // Let unknown routes fall through to `onUnknownRoute`.
+          return null;
         },
         onUnknownRoute: (settings) => MaterialPageRoute(
           builder: (context) => const Scaffold(
