@@ -92,7 +92,15 @@ class CashFlowService {
         "success": false,
         "data": null,
         "statusCode": e.response?.statusCode ?? 500,
-        "message": e.response?.data['message'] ?? "Something went wrong",
+        "message":
+            e.response?.data?['message'] ?? "An unexpected error occurred",
+      };
+    } catch (e) {
+      return {
+        "success": false,
+        "data": null,
+        "statusCode": 500,
+        "message": "Unexpected error: $e",
       };
     }
   }

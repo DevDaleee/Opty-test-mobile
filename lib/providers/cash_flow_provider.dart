@@ -62,6 +62,10 @@ class CashFlowProvider extends ChangeNotifier {
     return monthlyExpenses;
   }
 
+  CashFlow findById(String id) {
+    return _cashFlow.firstWhere((cashFlow) => cashFlow.id == id);
+  }
+
   void removeCashFlowById(String cashFlowId) {
     _cashFlow.removeWhere((flow) => flow.id == cashFlowId);
     _filteredCashFlow = _cashFlow;

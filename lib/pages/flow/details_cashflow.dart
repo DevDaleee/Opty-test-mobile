@@ -129,7 +129,9 @@ class _DetailsCashFlowState extends State<DetailsCashFlow> {
                 fontWeight: FontWeight.w700,
               ),
               enabled: startToEdit,
-              label: cashFlow['description'].toString(),
+              label: cashFlow['description'].toString().isEmpty
+                  ? 'Nenhuma descrição para essa movimentação'
+                  : cashFlow['description'].toString(),
               filled: true,
               borderColor: Theme.of(context)
                   .colorScheme

@@ -1,14 +1,13 @@
-import 'package:finance/components/buttons/custom_outlined_button.dart';
 import 'package:finance/components/cards/cashFlow_card.dart';
 import 'package:finance/components/cards/history_card.dart';
 import 'package:finance/components/helper/colors.dart';
 import 'package:finance/components/helper/converters.dart';
 import 'package:finance/components/helper/sizes.dart';
 import 'package:finance/components/option_menu.dart';
-import 'package:finance/pages/charts/charts_hub.dart';
 import 'package:finance/providers/cash_flow_provider.dart';
 import 'package:finance/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
@@ -120,16 +119,6 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                CustomOutlinedButton(
-                  titulo: 'titulo',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Charts(cashFlows: provider.cashFlow),
-                    ),
-                  ),
-                ),
                 Center(
                   child: provider.cashFlow.isEmpty
                       ? const Text(
@@ -169,15 +158,49 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/add-cashFlow');
-        },
-        shape: const CircleBorder(),
+      floatingActionButton: SpeedDial(
         backgroundColor: Theme.of(context).colorScheme.inverseSurface,
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).colorScheme.surface,
+        activeIcon: Icons.close,
+        children: [
+          SpeedDialChild(
+            elevation: 0,
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).colorScheme.inverseSurface,
+            ),
+            labelWidget: const Text('Adicionar movimentação'),
+            backgroundColor:
+                Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5),
+            onTap: () {
+              Navigator.pushNamed(context, '/add-cashFlow');
+            },
+          ),
+          SpeedDialChild(
+            elevation: 0,
+            child: Icon(
+              Icons.bar_chart,
+              color: Theme.of(context).colorScheme.inverseSurface,
+            ),
+            labelWidget: const Text('Gráficos'),
+            backgroundColor:
+                Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/charts',
+                arguments: {
+                  'cashFlows': context.read<CashFlowProvider>().cashFlow,
+                },
+              );
+            },
+          ),
+        ],
+        child: SizedBox(
+          width: SpaceSizes.md,
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: Theme.of(context).colorScheme.surface,
+          ),
         ),
       ),
     );

@@ -24,57 +24,65 @@ class EditCashFlow extends StatefulWidget {
 
 class _EditCashFlowState extends State<EditCashFlow> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _amountController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _amountController;
   DateTime? selectedDate;
+  late bool isCashIn;
   bool isLoading = false;
+  late CashFlow selectedCashFlow;
 
   @override
   void initState() {
     super.initState();
-    _loadCashFlow();
+    selectedCashFlow =
+        context.read<CashFlowProvider>().findById(widget.cashFlowId);
+    _titleController = TextEditingController(text: selectedCashFlow.reason);
+    _descriptionController =
+        TextEditingController(text: selectedCashFlow.description);
+    _amountController =
+        TextEditingController(text: selectedCashFlow.amount.toString());
+    selectedDate = selectedCashFlow.createdAt;
+    isCashIn = selectedCashFlow.isCashIn!;
   }
 
-  Future<void> _loadCashFlow() async {
-    var response = await CashFlowService.getCashFlowById(widget.cashFlowId);
-    if (response['success'] == true) {
-      var data = response['data'];
-      setState(() {
-        _titleController.text = data['reason'] ?? '';
-        _descriptionController.text = data['description'] ?? '';
-        _amountController.text = data['amount'].toString();
-        selectedDate = DateTime.parse(data['createdAt']);
-        context
-            .read<CashFlowProvider>()
-            .updateCategoryChoosed(data['category']);
-        context.read<CashFlowProvider>().toggleIsCashIn(data['isCashIn']);
-      });
-    } else {
-      showToast(context, {
-        'statusCode': response['statusCode'],
-        'message': response['message'] ?? 'Erro ao carregar a movimentação',
-      });
-    }
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _amountController.dispose();
+    isCashIn = false;
+    super.dispose();
   }
 
-  Future<void> _onUpdateFlow(Map<String, dynamic> updatedData) async {
+  onUpdateFlow(Map<String, dynamic> updatedData) async {
     var response =
-        await CashFlowService.updateCashFlow(widget.cashFlowId, updatedData);
+        await CashFlowService.updateCashFlow(selectedCashFlow.id, updatedData);
+
     if (response['success'] == true) {
       var provider = context.read<CashFlowProvider>();
       provider.updateCashFlow(
-          widget.cashFlowId, CashFlow.fromJson(response['data']));
-      showToast(context, response);
+        selectedCashFlow.id,
+        CashFlow.fromJson(response['data']),
+      );
+
+      showToast(context, {
+        ...response,
+        'message': 'Movimentação atualizada com sucesso!',
+      });
+
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/home',
         (_) => false,
       );
     } else {
+      final errorMessage = response['message'] is String
+          ? response['message']
+          : (response['message'] as List<dynamic>).join(', ');
       showToast(context, {
-        'statusCode': response['statusCode'],
-        'message': response['message'] ?? 'Erro ao atualizar a movimentação',
+        ...response,
+        'message': errorMessage,
       });
     }
   }
@@ -101,7 +109,7 @@ class _EditCashFlowState extends State<EditCashFlow> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     CustomTextField(
-                      enabled: false,
+                      enabled: true,
                       filled: true,
                       controller: _titleController,
                       textInputAction: TextInputAction.next,
@@ -215,7 +223,7 @@ class _EditCashFlowState extends State<EditCashFlow> {
                                 },
                               ).toList(),
                               value: getStringFromCategory(
-                                  provider.pickedCategory),
+                                  selectedCashFlow.category!),
                               onChanged: (String? value) {
                                 if (value != null) {
                                   provider.updateCategoryChoosed(value);
@@ -228,7 +236,7 @@ class _EditCashFlowState extends State<EditCashFlow> {
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     GestureDetector(
-                      onTap: () => provider.toggleIsCashIn(!provider.isCashIn!),
+                      onTap: () => provider.toggleIsCashIn(isCashIn),
                       child: Card(
                         color: provider.isCashIn!
                             ? namedColors['blue']!.withOpacity(0.75)
@@ -268,7 +276,7 @@ class _EditCashFlowState extends State<EditCashFlow> {
                             "isCashIn": provider.isCashIn,
                             "createdAt": selectedDate!.toIso8601String(),
                           };
-                          await _onUpdateFlow(updatedData);
+                          await onUpdateFlow(updatedData);
                         }
                       },
                       titulo: 'Salvar',
